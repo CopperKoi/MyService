@@ -212,4 +212,8 @@ systemctl status nginx --no-pager
 
 **success!!!**
 
+---
+
+Copyright © 2025 CopperKoi
+
 </aside>
