@@ -10,7 +10,7 @@ apt install -y git curl wget unzip build-essential ufw nginx python3-venv python
 
 ![image.png](image.png)
 
-然后创建项目目录，激活nenv，下一些工具和依赖
+然后创建项目目录，激活venv，下一些工具和依赖
 
 ```bash
 mkdir -p ~/projects/blog-backend
