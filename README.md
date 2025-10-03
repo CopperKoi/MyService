@@ -1,5 +1,7 @@
 # MyService
 
+> 一个简陋个人博客的搭建实例
+
 安装常用工具和Nginx
 
 ```bash
