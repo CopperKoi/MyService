@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>我的 Markdown 博客</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body{font-family:system-ui,Arial;padding:20px;max-width:900px;margin:auto}
+    nav a{margin-right:12px}
+    .post{border-bottom:1px solid #eee;padding:10px 0}
+    pre{background:#f7f7f7;padding:10px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>CopperKoi's Blog </h1>
+  <nav><a href="#" id="home">首页</a> <a href="/admin.html">发布/上传（管理员）</a></nav>
+  <div id="list"></div>
+  <div id="post" style="display:none"></div>
+
+<script>
+const API = '/api';
+async function listPosts(){
+  const r = await fetch(API + '/posts');
+  const data = await r.json();
+  const el = document.getElementById('list');
+  el.innerHTML = '';
+  data.forEach(p=>{
+    const d = document.createElement('div');
+    d.className = 'post';
+    d.innerHTML = `<a href="#" data-slug="${p.slug}" class="link">${p.title||p.slug}</a>
+      <div style="color:#666;font-size:13px">${new Date(p.created_at).toLocaleString()}</div>`;
+    el.appendChild(d);
+  });
+  document.querySelectorAll('.link').forEach(a=>{
+    a.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      const slug = e.target.dataset.slug;
+      const r = await fetch(API + '/posts/' + slug);
+      if (!r.ok){ alert('未找到'); return; }
+      const obj = await r.json();
+      document.getElementById('list').style.display = 'none';
+      const postDiv = document.getElementById('post');
+      postDiv.style.display = '';
+      postDiv.innerHTML = `<p><a href="#" id="back">← 返回</a></p>
+        <h2>${obj.title}</h2>
+        <div style="color:#666">${new Date(obj.created_at).toLocaleString()}</div>
+        <hr>
+        <div id="md">${marked.parse(obj.content)}</div>`;
+      document.getElementById('back').addEventListener('click', (e)=>{ e.preventDefault(); postDiv.style.display='none'; document.getElementById('list').style.display=''; });
+    });
+  });
+}
+document.getElementById('home').addEventListener('click', (e)=>{ e.preventDefault(); document.getElementById('post').style.display='none'; document.getElementById('list').style.display=''; });
+listPosts();
+</script>
+</body>
+</html>
+

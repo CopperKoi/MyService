@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — 上传 / 发布</title>
+  <style>body{font-family:system-ui;padding:20px;max-width:800px;margin:auto} label{display:block;margin-top:8px}</style>
+</head>
+<body>
+  <h1>管理员：上传 / 发布 Markdown</h1>
+  <div>
+    <h3>登录（获取 token）</h3>
+    <input id="username" placeholder="用户名" value="admin"/><br/>
+    <input id="password" placeholder="密码" type="password" value="changeme"/><br/>
+    <button id="btnLogin">登录</button>
+    <div id="tokenArea"></div>
+  </div>
+
+  <hr/>
+
+  <div>
+    <h3>直接创建文章（表单）</h3>
+    <label>标题 <input id="postTitle" /></label>
+    <label>内容（Markdown） <textarea id="postContent" rows="10" style="width:100%"></textarea></label>
+    <button id="btnCreate">发布</button>
+  </div>
+
+  <hr/>
+
+  <div>
+    <h3>上传 .md 文件</h3>
+    <input type="file" id="fileInput" accept=".md" />
+    <button id="btnUpload">上传</button>
+  </div>
+
+<script>
+let token = localStorage.getItem('blog_token') || '';
+
+function setToken(t){
+  token = t;
+  localStorage.setItem('blog_token', t);
+  document.getElementById('tokenArea').innerText = t ? '已登录，token 存于 localStorage' : '未登录';
+}
+
+document.getElementById('btnLogin').addEventListener('click', async ()=>{
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  const fd = new FormData();
+  fd.append('username', u);
+  fd.append('password', p);
+  const r = await fetch('/api/login', { method:'POST', body: fd });
+  if (!r.ok){ alert('登录失败'); return; }
+  const j = await r.json();
+  setToken(j.access_token);
+  alert('登录成功');
+});
+
+document.getElementById('btnCreate').addEventListener('click', async ()=>{
+  if(!token){ alert('请先登录'); return; }
+  const title = document.getElementById('postTitle').value;
+  const content = document.getElementById('postContent').value;
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('content', content);
+  const r = await fetch('/api/posts', { method:'POST', body: fd, headers: { 'Authorization': 'Bearer ' + token } });
+  if(!r.ok){ alert('发布失败'); return; }
+  alert('发布成功'); window.location.href = '/';
+});
+
+document.getElementById('btnUpload').addEventListener('click', async ()=>{
+  if(!token){ alert('请先登录'); return; }
+  const file = document.getElementById('fileInput').files[0];
+  if(!file){ alert('请选择 .md 文件'); return; }
+  const fd = new FormData();
+  fd.append('file', file);
+  const r = await fetch('/api/upload', { method:'POST', body: fd, headers: { 'Authorization': 'Bearer ' + token } });
+  if (!r.ok){ alert('上传失败'); return; }
+  const j = await r.json();
+  alert('上传成功，slug=' + j.slug);
+});
+setToken(localStorage.getItem('blog_token'));
+</script>
+</body>
+</html>
+
